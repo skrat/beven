@@ -1,0 +1,92 @@
+/* some style */
+
+.container {
+  max-width: 48em !important;
+}
+
+header {
+  border-bottom: 3px solid #2196f3;
+  margin-bottom: 11px;
+  width: 95%;
+}
+
+h3 {
+  font-size: 2em;
+}
+
+.amount {
+  text-align: right;
+}
+
+.kill {
+  position: relative;
+  left: 5px;
+  top: 5px;
+}
+
+.items .actions {
+  margin-top: 23px;
+}
+
+.items .actions .rc-gap {
+  height: 1px;
+  position: relative;
+  top: 1.25em;
+  border-top: 3px solid #2196f3;
+}
+
+.items .actions i {
+  margin-left: 8px;
+  position: relative;
+  top: 2px;
+}
+
+.sum {
+  width: 95%;
+  max-width: 24em;
+}
+
+.sum table.table {
+  margin-bottom: 12px;
+  margin-top: 11px;
+}
+
+.sum table.table tr:first-child th,
+.sum table.table tr:first-child td {
+  border-top-color: transparent;
+}
+
+.sum table.table td {
+  text-align: right;
+}
+
+.sum .list-group-item {
+  background-color: #EEE;
+}
+
+.sum .badge {
+  font-size: 14px;
+  background-color: #555;
+  position: relative;
+  top: 1px;
+}
+
+.glyphicon.spinning {
+  animation: spin 1s infinite linear;
+  -webkit-animation: spin2 1s infinite linear;
+}
+
+@keyframes spin {
+  from { transform: scale(1) rotate(0deg); }
+  to { transform: scale(1) rotate(360deg); }
+}
+
+@-webkit-keyframes spin2 {
+  from { -webkit-transform: rotate(0deg); }
+  to { -webkit-transform: rotate(360deg); }
+}
+
+.btn[disabled] {
+  -webkit-box-shadow: 1px 1px 4px rgba(0,0,0,0.4);
+  box-shadow: 1px 1px 4px rgba(0,0,0,0.4);
+}
