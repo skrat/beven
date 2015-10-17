@@ -4,7 +4,8 @@
             [reagent.ratom :refer-macros [reaction]]
             [re-frame.core :refer [dispatch
                                    register-sub
-                                   register-handler]]))
+                                   register-handler]]
+            [cljs.reader :as r]))
 
 (def pos-num
   "Positive number validtor"
@@ -44,13 +45,21 @@
 (register-simple-sub :saved?)
 (register-simple-sub :sharing?)
 
-;; Initialize re-frame state with empty-db
+;; Initialize re-frame state with saved or empty-db
 ;;
+
+(r/register-tag-parser! "beven.model.Item" map->Item)
 
 (register-handler
  :init
  (fn [db _]
-   (merge db empty-db)))
+   (try
+     (let [s (->> "#state"
+                  (.querySelector js/document) (.-innerHTML)
+                  (r/read-string))]
+       (merge db empty-db s))
+     (catch js/Error err
+       (merge db empty-db)))))
 
 (register-handler
  :add
@@ -74,6 +83,7 @@
 (register-handler
  :save
  (fn [db [_ x]]
+   (print (pr-str db))
    (js/setTimeout #(dispatch [:save true]) 2000)
    (assoc db :saved? x)))
 
