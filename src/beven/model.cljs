@@ -44,11 +44,16 @@
         url (str prot "//" host "/" p)]
     (.replaceState js/window.history nil "Big payback" url)))
 
-
 (defn can-save? []
   (->
    (.. js/window.location -pathname (substring 1) (indexOf "/"))
    (> 0)))
+
+(defn sharing []
+  (let [url (.toString js/window.location)
+        public (.. url (split "/") (slice 0 4) (join "/"))]
+    {:public public
+     :private (if (can-save?) url nil)}))
 
 ;; Register subscription handlers
 ;;

@@ -71,6 +71,20 @@ h3 {
   top: 1px;
 }
 
+.sharing .modal-body {
+  padding: 0 2em 1em;
+}
+
+.sharing input {
+  width: 90%;
+}
+
+@media only screen and (min-device-width: 768px){
+  .sharing input {
+    min-width: 20em;
+  }
+}
+
 .glyphicon.spinning {
   animation: spin 1s infinite linear;
   -webkit-animation: spin2 1s infinite linear;

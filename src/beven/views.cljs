@@ -24,6 +24,9 @@
       (and (=  9 (.-keyCode e))     ;; tab
            (not (.-shiftKey e)))))  ;; ...but no shift
 
+(defn select-all [e]
+  (.setSelectionRange e 0 (.. e -value -length)))
+
 (defn item [x]
   [com/h-box
    :class "item"
@@ -124,12 +127,30 @@
                 [:strong (format-person to)]]))]]]))))
 
 (defn sharing []
-  (let [sharing? (subscribe [:sharing?])]
+  (let [sharing? (subscribe [:sharing?])
+        urls (m/sharing)]
     (fn []
       (if @sharing?
         [com/modal-panel
-         :child [:section
-                 [:h5 "Share the bill"]]
+         :class "sharing"
+         :wrap-nicely? false
+         :child [:div.modal-content
+                 [:div.modal-header
+                  [:button.close {:type :button :aria-hidden "true"
+                                  :on-click #(dispatch [:share false])} "×"]
+                  [:h4.modal-title "Share the bill"]]
+                 [:div.modal-body
+                  [:div [:strong "Public URL"]
+                   [:p [:input {:type :text :value (:public urls)
+                                :on-click #(select-all (.-target %))
+                                :read-only true}]
+                    [:span.help-block "Email this to your friends"]]]
+                  (when-let [private (:private urls)]
+                    [:div [:strong "Private URL"]
+                     [:p [:input {:type :text :value private
+                                  :on-click #(select-all (.-target %))
+                                  :read-only true}]
+                      [:span.help-block "The bill can be edited here"]]])]]
          :backdrop-on-click #(dispatch [:share false])]))))
 
 (defn root []
