@@ -1,5 +1,20 @@
 /* some style */
 
+html, body {
+  min-height: 100%;
+}
+
+#app {
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+  margin: 0 auto -100px;
+}
+
+.push, footer {
+  height: 100px;
+}
+
 .container {
   max-width: 48em !important;
 }
@@ -83,6 +98,17 @@ h3 {
   .sharing input {
     min-width: 20em;
   }
+}
+
+footer {
+  text-align: center;
+  font-style: italic;
+  width: 100%;
+  padding-top: 1em;
+}
+
+footer img {
+  margin-left: 1em;
 }
 
 .glyphicon.spinning {

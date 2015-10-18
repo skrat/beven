@@ -159,5 +159,6 @@
     [:h3.text-muted "Big payback"]]
    [item-list]
    [sum-total]
-   [sharing]])
+   [sharing]
+   [:div.push]])
 
