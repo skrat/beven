@@ -1,7 +1,10 @@
 (ns beven.model
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [beven.macros :refer-macros [register-simple-sub]]
             [schema.core :as s :include-macros true]
             [reagent.ratom :refer-macros [reaction]]
+            [cljs.core.async :refer [<!]]
+            [cljs-http.client :as http]
             [re-frame.core :refer [dispatch
                                    register-sub
                                    register-handler]]
@@ -26,6 +29,26 @@
    :item-id-counter 1
    :saved?   false
    :sharing? false})
+
+;; Location and persistent state handling
+;;
+
+(defn read-state []
+  (->> "#state"
+       (.querySelector js/document) (.-innerHTML)
+       (r/read-string)))
+
+(defn replace-url! [p]
+  (let [prot (.-protocol js/window.location)
+        host (.-host     js/window.location)
+        url (str prot "//" host "/" p)]
+    (.replaceState js/window.history nil "Big payback" url)))
+
+
+(defn can-save? []
+  (->
+   (.. js/window.location -pathname (substring 1) (indexOf "/"))
+   (> 0)))
 
 ;; Register subscription handlers
 ;;
@@ -54,10 +77,7 @@
  :init
  (fn [db _]
    (try
-     (let [s (->> "#state"
-                  (.querySelector js/document) (.-innerHTML)
-                  (r/read-string))]
-       (merge db empty-db s))
+     (merge db empty-db (read-state))
      (catch js/Error err
        (merge db empty-db)))))
 
@@ -73,18 +93,28 @@
 (register-handler
  :save-item
  (fn [db [_ x]]
+   (when (can-save?) (dispatch [:save nil]))
    (assoc-in db [:items (:id x)] x)))
 
 (register-handler
  :kill-item
  (fn [db [_ x]]
+   (when (can-save?) (dispatch [:save nil]))
    (update db :items dissoc (:id x))))
 
 (register-handler
  :save
  (fn [db [_ x]]
-   (print (pr-str db))
-   (js/setTimeout #(dispatch [:save true]) 2000)
+   (when (nil? x)
+     (go
+       (let [url (if (:saved? db)
+                   (.. js/window.location -pathname)
+                   "/save")
+             resp (<! (http/post url {:edn-params (assoc db :saved? true)}))]
+         (when (:success resp)
+           (when (not (:saved? db))
+             (replace-url! (:body resp)))
+           (dispatch [:save true])))))
    (assoc db :saved? x)))
 
 (register-handler
