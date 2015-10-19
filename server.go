@@ -19,6 +19,7 @@ var (
 	maxConnections = flag.Int("max-connections", 10, "Max connections to Redis")
 	database       = flag.Int("database", 1, "Redis database index")
 	secret         = flag.String("secret", "If you can dream it, you can do it", "For edit URLs")
+	bind           = flag.String("bind", "127.0.0.1:3342", "Listen on this address")
 )
 
 func obscurity(id uuid.UUID) string {
@@ -86,19 +87,24 @@ func Load(pool *redis.Pool, t *template.Template, params martini.Params) (int, s
 	c := pool.Get()
 	defer c.Close()
 
-	key := params["id"]
-	id, err := uuid.FromString(key)
-	if err != nil {
-		return 500, fmt.Sprint(err)
-	}
-
-	state, err := redis.String(c.Do("GET", id.Bytes()))
-	if err != nil {
-		return 500, fmt.Sprint(err)
-	}
-
 	var doc bytes.Buffer
-	t.Execute(&doc, state)
+	key, ok := params["id"]
+
+	if ok {
+		id, err := uuid.FromString(key)
+		if err != nil {
+			return 500, fmt.Sprint(err)
+		}
+
+		state, err := redis.String(c.Do("GET", id.Bytes()))
+		if err != nil {
+			return 500, fmt.Sprint(err)
+		}
+
+		t.Execute(&doc, state)
+	} else {
+		t.Execute(&doc, "")
+	}
 
 	return 200, doc.String()
 }
@@ -132,8 +138,9 @@ func main() {
   m.Post("/save", Save)
   m.Post("/:id/:sum", Save)
 
+  m.Get("/", Load)
   m.Get("/:id", Load)
   m.Get("/:id/:sum", Load)
 
-  m.Run()
+  m.RunOnAddr(*bind)
 }
