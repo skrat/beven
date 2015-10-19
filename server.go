@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"io/ioutil"
 	"crypto/sha1"
+	"crypto/rand"
 	"text/template"
-	"github.com/satori/go.uuid"
 	"github.com/go-martini/martini"
 	"github.com/garyburd/redigo/redis"
 )
@@ -22,49 +22,51 @@ var (
 	bind           = flag.String("bind", "127.0.0.1:3342", "Listen on this address")
 )
 
-func obscurity(id uuid.UUID) string {
+func obscurity(id string) string {
 	hash := sha1.New()
   hash.Write([]byte(*secret))
-  hash.Write([]byte(id.String()))
+  hash.Write([]byte(id))
   sum := hash.Sum(nil)
-	return fmt.Sprintf("%s/%s", id.String(), fmt.Sprintf("%x", sum)[:5])
+	return fmt.Sprintf("%s/%s", id, fmt.Sprintf("%x", sum)[:6])
 }
 
-func security(id uuid.UUID, sums string) bool {
+func security(id string, sums string) bool {
 	hash := sha1.New()
   hash.Write([]byte(*secret))
-  hash.Write([]byte(id.String()))
+  hash.Write([]byte(id))
   sum := hash.Sum(nil)
-	return fmt.Sprintf("%x", sum)[:5] == sums
+	return fmt.Sprintf("%x", sum)[:6] == sums
+}
+
+func genID() string {
+	b := make([]byte, 3)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)
 }
 
 func Save(pool *redis.Pool, req *http.Request, params martini.Params) (int, string) {
 	c := pool.Get()
 	defer c.Close()
 
-	id := uuid.NewV4()
+  id := genID()
 	param_id, ok := params["id"]
 
 	if ok {
-		parsed_id, err := uuid.FromString(param_id)
-		if err != nil {
-			return 500, fmt.Sprint(err)
-		}
-		if security(parsed_id, params["sum"]) {
-			id = parsed_id
+		if security(param_id, params["sum"]) {
+			id = param_id
 		} else {
 			return 401, "Not your bill"
 		}
 	} else {
 		for i := 0; i < 10; i++ {
-			exists, err := c.Do("EXISTS", id.Bytes())
+			exists, err := c.Do("EXISTS", id)
 			if err != nil {
 				return 500, fmt.Sprint(err)
 			}
 			if exists == int64(0) {
 				break
 			}
-			id = uuid.NewV4()
+			id = genID()
 		}
 	}
 
@@ -75,7 +77,7 @@ func Save(pool *redis.Pool, req *http.Request, params martini.Params) (int, stri
 	if len(body) > 10000 {
 		return 422, "Body too large"
 	}
-	_, err = c.Do("SET", id.Bytes(), body)
+	_, err = c.Do("SET", id, body)
 	if err != nil {
 		return 500, fmt.Sprint(err)
 	}
@@ -91,16 +93,10 @@ func Load(pool *redis.Pool, t *template.Template, params martini.Params) (int, s
 	key, ok := params["id"]
 
 	if ok {
-		id, err := uuid.FromString(key)
+		state, err := redis.String(c.Do("GET", key))
 		if err != nil {
 			return 500, fmt.Sprint(err)
 		}
-
-		state, err := redis.String(c.Do("GET", id.Bytes()))
-		if err != nil {
-			return 500, fmt.Sprint(err)
-		}
-
 		t.Execute(&doc, state)
 	} else {
 		t.Execute(&doc, "")
@@ -142,5 +138,9 @@ func main() {
   m.Get("/:id", Load)
   m.Get("/:id/:sum", Load)
 
-  m.RunOnAddr(*bind)
+	if os.Getenv("DEV") == "1" {
+		m.Run()
+	} else {
+		m.RunOnAddr(*bind)
+	}
 }
