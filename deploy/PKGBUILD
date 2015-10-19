@@ -28,9 +28,13 @@ build() {
 
   go get -d -v github.com/skrat/beven
   go build
+
+  lein cljsbuild once min
 }
 
 package() {
   cd "$srcdir/$_pkgname"
   install -Dm755 "$_pkgname" "$pkgdir/var/www/$_pkgname/$_pkgname"
+  cd resources
+  find . -type f -exec install -D -m 644 {,${pkgdir}/var/www/$_pkgname/}{} \;
 }
