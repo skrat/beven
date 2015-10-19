@@ -22,15 +22,15 @@ pkgver() {
 build() {
   cd "$srcdir/$_pkgname"
 
-  # # Force our own git checkout
-  # export GOPATH="$srcdir"
-  # mkdir -p "$GOPATH/src/github.com/skrat"
-  # ln -s `pwd` "$GOPATH/src/github.com/skrat/beven"
+  # Force our own git checkout
+  export GOPATH="$srcdir"
+  mkdir -p "$GOPATH/src/github.com/skrat"
+  ln -s `pwd` "$GOPATH/src/github.com/skrat/beven"
 
-  # go get -d -v github.com/skrat/beven
-  # go build
+  go get -d -v github.com/skrat/beven
+  go build
 
-  # lein cljsbuild once min
+  lein cljsbuild once min
 }
 
 package() {
