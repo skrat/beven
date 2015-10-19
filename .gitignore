@@ -13,3 +13,7 @@ gin-bin
 .lein-plugins/
 .repl
 .nrepl-port
+/deploy/*.xz
+/deploy/beven
+/deploy/src
+/deploy/pkg

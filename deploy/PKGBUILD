@@ -1,0 +1,36 @@
+pkgname=beven-git
+_pkgname=beven
+pkgver=r6.611619f
+pkgrel=1
+pkgdesc="Split bills and share with friends"
+arch=('x86_64' 'i686' 'arm')
+url="https://github.com/skrat/beven"
+provides=('beven')
+makedepends=('go' 'git' 'leiningen')
+source=('git+https://github.com/skrat/beven.git')
+sha512sums=('SKIP')
+
+pkgver() {
+  cd "$srcdir/$_pkgname"
+  ( set -o pipefail
+    git describe --long --tags 2>/dev/null | sed 's/\([^-]*-g\)/r\1/;s/-/./g' ||
+    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  )
+}
+
+build() {
+  cd "$srcdir/$_pkgname"
+
+  # Force our own git checkout
+  export GOPATH="$srcdir"
+  mkdir -p "$GOPATH/src/github.com/skrat"
+  ln -s `pwd` "$GOPATH/src/github.com/skrat/beven"
+
+  go get -d -v github.com/skrat/beven
+  go build
+}
+
+package() {
+  cd "$srcdir/$_pkgname"
+  install -Dm755 "$_pkgname" "$pkgdir/var/www/$_pkgname/$_pkgname"
+}
