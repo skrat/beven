@@ -1,6 +1,6 @@
 pkgname=beven-git
 _pkgname=beven
-pkgver=r12.ae2a9c5
+pkgver=r10.b8c7c63
 pkgrel=1
 pkgdesc="Split bills and share with friends"
 arch=('x86_64' 'i686' 'arm')
@@ -37,6 +37,5 @@ package() {
   cd "$srcdir/$_pkgname"
   install -Dm755 "$_pkgname" "$pkgdir/var/www/$_pkgname/$_pkgname"
   install -Dm644 "deploy/beven.service" "$pkgdir/usr/lib/systemd/system/beven.service"
-  cd resources
-  find . -type f -exec install -D -m 644 {,${pkgdir}/var/www/$_pkgname/}{} \;
+  find resources -type f -exec install -D -m 644 {,${pkgdir}/var/www/$_pkgname/}{} \;
 }

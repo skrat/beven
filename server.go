@@ -60,9 +60,7 @@ func Save(pool *redis.Pool, req *http.Request, params martini.Params) (int, stri
 	} else {
 		for i := 0; i < 10; i++ {
 			exists, err := c.Do("EXISTS", id)
-			if err != nil {
-				return 500, fmt.Sprint(err)
-			}
+			if err != nil {	panic(err) }
 			if exists == int64(0) {
 				break
 			}
@@ -71,16 +69,12 @@ func Save(pool *redis.Pool, req *http.Request, params martini.Params) (int, stri
 	}
 
 	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		return 500, fmt.Sprint(err)
-	}
+	if err != nil { panic(err) }
 	if len(body) > 10000 {
 		return 422, "Body too large"
 	}
 	_, err = c.Do("SET", id, body)
-	if err != nil {
-		return 500, fmt.Sprint(err)
-	}
+	if err != nil { panic(err) }
 
 	return 200, obscurity(id)
 }
@@ -94,9 +88,7 @@ func Load(pool *redis.Pool, t *template.Template, params martini.Params) (int, s
 
 	if ok {
 		state, err := redis.String(c.Do("GET", key))
-		if err != nil {
-			return 500, fmt.Sprint(err)
-		}
+		if err != nil { panic(err) }
 		t.Execute(&doc, state)
 	} else {
 		t.Execute(&doc, "")
@@ -107,17 +99,18 @@ func Load(pool *redis.Pool, t *template.Template, params martini.Params) (int, s
 
 func main() {
 	flag.Parse()
-  m := martini.Classic()
+  m := martini.New()
+	r := martini.NewRouter()
+	m.Use(martini.Logger())
+	m.Use(martini.Recovery())
+	m.MapTo(r, (*martini.Routes)(nil))
+	m.Action(r.Handle)
 
 	var pool = redis.NewPool(func() (redis.Conn, error) {
 		c, err := redis.Dial("tcp", *redisAddress)
-		if err != nil {
-			return nil, err
-		}
+		if err != nil { panic(err) }
 		_, err = c.Do("SELECT", *database)
-		if err != nil {
-			return nil, err
-		}
+		if err != nil { panic(err) }
 		return c, err
 	}, *maxConnections)
 	defer pool.Close()
@@ -131,12 +124,12 @@ func main() {
 	t, _ := template.New("index").Parse(string(f))
 	m.Map(t)
 
-  m.Post("/save", Save)
-  m.Post("/:id/:sum", Save)
+  r.Post("/save", Save)
+  r.Post("/:id/:sum", Save)
 
-  m.Get("/", Load)
-  m.Get("/:id", Load)
-  m.Get("/:id/:sum", Load)
+  r.Get("/", Load)
+  r.Get("/:id", Load)
+  r.Get("/:id/:sum", Load)
 
 	if os.Getenv("DEV") == "1" {
 		m.Run()
