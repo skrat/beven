@@ -24,17 +24,17 @@ var (
 
 func obscurity(id string) string {
 	hash := sha1.New()
-  hash.Write([]byte(*secret))
-  hash.Write([]byte(id))
-  sum := hash.Sum(nil)
+	hash.Write([]byte(*secret))
+	hash.Write([]byte(id))
+	sum := hash.Sum(nil)
 	return fmt.Sprintf("%s/%s", id, fmt.Sprintf("%x", sum)[:6])
 }
 
 func security(id string, sums string) bool {
 	hash := sha1.New()
-  hash.Write([]byte(*secret))
-  hash.Write([]byte(id))
-  sum := hash.Sum(nil)
+	hash.Write([]byte(*secret))
+	hash.Write([]byte(id))
+	sum := hash.Sum(nil)
 	return fmt.Sprintf("%x", sum)[:6] == sums
 }
 
@@ -48,7 +48,7 @@ func Save(pool *redis.Pool, req *http.Request, params martini.Params) (int, stri
 	c := pool.Get()
 	defer c.Close()
 
-  id := genID()
+	id := genID()
 	param_id, ok := params["id"]
 
 	if ok {
@@ -99,7 +99,7 @@ func Load(pool *redis.Pool, t *template.Template, params martini.Params) (int, s
 
 func main() {
 	flag.Parse()
-  m := martini.New()
+	m := martini.New()
 	r := martini.NewRouter()
 	m.Use(martini.Logger())
 	m.Use(martini.Recovery())
@@ -124,12 +124,12 @@ func main() {
 	t, _ := template.New("index").Parse(string(f))
 	m.Map(t)
 
-  r.Post("/save", Save)
-  r.Post("/:id/:sum", Save)
+	r.Post("/save", Save)
+	r.Post("/:id/:sum", Save)
 
-  r.Get("/", Load)
-  r.Get("/:id", Load)
-  r.Get("/:id/:sum", Load)
+	r.Get("/", Load)
+	r.Get("/:id", Load)
+	r.Get("/:id/:sum", Load)
 
 	if os.Getenv("DEV") == "1" {
 		m.Run()
