@@ -8,6 +8,7 @@ User=nobody
 Group=nobody
 Environment="MARTINI_ENV=production"
 ExecStart=/var/www/beven/beven
+WorkingDirectory=/var/www/beven
 PrivateDevices=true
 ProtectSystem=full
 ProtectHome=true
