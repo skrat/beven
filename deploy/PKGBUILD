@@ -1,11 +1,12 @@
 pkgname=beven-git
 _pkgname=beven
-pkgver=r6.611619f
+pkgver=r9.b684696
 pkgrel=1
 pkgdesc="Split bills and share with friends"
 arch=('x86_64' 'i686' 'arm')
 url="https://github.com/skrat/beven"
 provides=('beven')
+depends=('redis')
 makedepends=('go' 'git' 'leiningen')
 source=('git+https://github.com/skrat/beven.git')
 sha512sums=('SKIP')
@@ -35,6 +36,7 @@ build() {
 package() {
   cd "$srcdir/$_pkgname"
   install -Dm755 "$_pkgname" "$pkgdir/var/www/$_pkgname/$_pkgname"
+  install -Dm644 "deploy/beven.service" "/usr/lib/systemd/system/beven.service"
   cd resources
   find . -type f -exec install -D -m 644 {,${pkgdir}/var/www/$_pkgname/}{} \;
 }

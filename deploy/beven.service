@@ -1,0 +1,17 @@
+[Unit]
+Description=Beven web server
+After=network.target redis.service
+
+[Service]
+Type=simple
+User=nobody
+Group=nobody
+ExecStart=/var/www/beven/beven
+PrivateDevices=true
+ProtectSystem=full
+ProtectHome=true
+NoNewPrivileges=true
+LimitNOFILE=10032
+
+[Install]
+WantedBy=multi-user.target
