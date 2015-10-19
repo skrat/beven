@@ -1,6 +1,6 @@
 pkgname=beven-git
 _pkgname=beven
-pkgver=r10.b8c7c63
+pkgver=r14.906a69a
 pkgrel=1
 pkgdesc="Split bills and share with friends"
 arch=('x86_64' 'i686' 'arm')
