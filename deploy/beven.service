@@ -6,6 +6,7 @@ After=network.target redis.service
 Type=simple
 User=nobody
 Group=nobody
+Environment="MARTINI_ENV=production"
 ExecStart=/var/www/beven/beven
 PrivateDevices=true
 ProtectSystem=full
