@@ -134,31 +134,71 @@
           [com/modal-panel
            :class "sharing"
            :wrap-nicely? false
-           :child [:div.modal-content
-                   [:div.modal-header
-                    [:button.close {:type :button :aria-hidden "true"
-                                    :on-click #(dispatch [:share false])} "×"]
-                    [:h4.modal-title "Share the bill"]]
-                   [:div.modal-body
-                    [:div [:strong "Public URL"]
-                     [:p [:input {:type :text :value (:public urls)
-                                  :on-click #(select-all (.-target %))
-                                  :read-only true}]
-                      [:span.help-block "Email this to your friends"]]]
-                    (when-let [private (:private urls)]
-                      [:div [:strong "Private URL"]
-                       [:p [:input {:type :text :value private
-                                    :on-click #(select-all (.-target %))
-                                    :read-only true}]
-                        [:span.help-block "The bill can be edited here"]]])]]
-           :backdrop-on-click #(dispatch [:share false])])))))
+           :backdrop-on-click #(dispatch [:share false])
+           :child
+           [:div.modal-content
+            [:div.modal-header
+             [:button.close {:type :button :aria-hidden "true"
+                             :on-click #(dispatch [:share false])} "×"]
+             [:h4.modal-title "Share the bill"]]
+            [:div.modal-body
+             [:div [:strong "Public URL"]
+              [:p [:input {:type :text :value (:public urls)
+                           :on-click #(select-all (.-target %))
+                           :read-only true}]
+               [:span.help-block "Email this to your friends"]]]
+             (when-let [private (:private urls)]
+               [:div [:strong "Private URL"]
+                [:p [:input {:type :text :value private
+                             :on-click #(select-all (.-target %))
+                             :read-only true}]
+                 [:span.help-block "The bill can be edited here"]]])]]])))))
+
+(defn dom->react
+  "Converts DOM nodes to React.DOM components"
+  [root]
+  (if (= 3 (.-nodeType root))
+    (.-textContent root)
+    (let [props #js {}
+          children #js []]
+      (doseq [node (array-seq (.-childNodes root))]
+        (.push children (dom->react node)))
+      (aset props "children" children)
+      (doseq [attr (array-seq (.-attributes root))]
+        (aset props (.-name attr) (.-value attr)))
+      ((aget js/React.DOM (-> root .-tagName .toLowerCase)) (clj->js props)))))
+
+(def help-text
+  (let [node (.querySelector js/document "#help")]
+    (.removeChild (.-parentNode node) node)
+    (aset node "id" "")
+    (dom->react node)))
+
+(defn help []
+  (let [help? (subscribe [:help?])]
+    (fn []
+      (if @help?
+        [com/modal-panel
+         :class "help"
+         :wrap-nicely? false
+         :backdrop-on-click #(dispatch [:help false])
+         :child
+         [:div.modal-content
+          [:div.modal-header
+           [:button.close {:type :button :aria-hidden "true"
+                           :on-click #(dispatch [:help false])} "×"]
+           [:h4.modal-title "How it works"]]
+          [:div.modal-body help-text]]]))))
 
 (defn root []
   [:section.container
    [:header.header.clearfix
-    [:h3.text-muted "Big payback"]]
+    [:h3.text-muted "Big payback"
+     [com/md-circle-icon-button :md-icon-name "zmdi-help"
+      :on-click #(dispatch [:help true])]]]
    [item-list]
    [sum-total]
    [sharing]
+   [help]
    [:div.push]])
 

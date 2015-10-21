@@ -29,6 +29,17 @@ h3 {
   font-size: 2em;
 }
 
+h3 .rc-md-circle-icon-button {
+  float: right;
+  position: relative;
+  left: 3px; top: -3px;
+  border-color: transparent;
+}
+
+h3 div.rc-md-circle-icon-button:hover {
+  border-color: transparent;
+}
+
 .amount {
   text-align: right;
 }
@@ -47,7 +58,7 @@ h3 {
   height: 1px;
   position: relative;
   top: 1.25em;
-  border-top: 3px solid #2196f3;
+  border-top: 3px solid #CCC;
 }
 
 .items .actions i {
@@ -94,9 +105,22 @@ h3 {
   width: 90%;
 }
 
+.help .modal-header {
+  padding-bottom: 0;
+}
+
+#help {
+  height: 0;
+  overflow: hidden;
+}
+
 @media only screen and (min-device-width: 768px){
   .sharing input {
     min-width: 20em;
+  }
+
+  .help > div:nth-child(2) {
+    max-width: 30em;
   }
 }
 

@@ -28,7 +28,8 @@
   {:items {0 empty-item}
    :item-id-counter 1
    :saved?   false
-   :sharing? false})
+   :sharing? false
+   :help?    false})
 
 ;; Location and persistent state handling
 ;;
@@ -72,6 +73,7 @@
 
 (register-simple-sub :saved?)
 (register-simple-sub :sharing?)
+(register-simple-sub :help?)
 
 ;; Initialize re-frame state with saved or empty-db
 ;;
@@ -126,6 +128,11 @@
  :share
  (fn [db [_ sharing?]]
    (assoc db :sharing? sharing?)))
+
+(register-handler
+ :help
+ (fn [db [_ help?]]
+   (assoc db :help? help?)))
 
 ;; Solving settlement
 ;;
